@@ -7,14 +7,14 @@
 task main()
 {
 	int lnum = 0;
-	int rnum = 0;
+	int rnum = 0; // acting as Boolean values, idk how to do them in Robotc or C++
 	int rspeed = 127;
 	int lspeed = 127;
 
 	int rotations = 3;
 
-	int rotationangle = rotations*360;
-	SensorValue[dgtl1] = 0;
+	int rotationangle = rotations*360; //the angle through which the encoders should record the wheels turning
+	SensorValue[dgtl1] = 0; // clearing any previous readings
 	SensorValue[dgtl3] = 0;
 
 	while(1 == 1){
@@ -28,7 +28,7 @@ task main()
 					lspeed = lspeed - 10;
 					rspeed = rspeed - 10;
 					motor(motorleft) = lspeed;
-					motor(motorright) = rspeed;
+					motor(motorright) = rspeed;//unfortunately, have not found a way to kill both engines independantly and accurately, so both are turned off at the same time.
 					wait1Msec(50);
 					lnum += 1;
 					rnum+=1;

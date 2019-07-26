@@ -13,9 +13,9 @@ task main()
 	SensorType[in8] = sensorGyro;
 	wait1Msec(3000);
 
-	int dftspeed = 50;
+	int dftspeed = 50; //default speed
 
-	int cycles = 100;
+	int cycles = 100;  //Maximum number of times that the robot can adjust its speed
 
 	int leftspeed = dftspeed;
 	int rightspeed = dftspeed;

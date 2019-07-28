@@ -9,17 +9,17 @@ task main()
 	clearDebugStream();
 	SensorType[in8] = sensorNone;
 	wait1Msec(1000);
-	SensorType[in8] = sensorGyro;
+	SensorType[in8] = sensorGyro;//initializing gyro scope
 	wait1Msec(3000);
 
 	int cycles = 100;
-	int n = 0;
-	int mspeed = 127;
+	int n = 0;  //variable to kill the program after x number of cycles
+	int mspeed = 127; //motor speed
 
 	float distancex = 0;
-	float distancey = 0;
+	float distancey = 0;//distance travelled in the cycle
 	float totalx = 0;
-	float totaly = 0;
+	float totaly = 0; // distance travelled total
 
 	int newangle = 0;
 	int oldangle = 0;
@@ -34,6 +34,7 @@ task main()
 
 	float distl = 0;
 	float distr = 0;
+	float avgdist = 0;
 
 	motor(motorleft) = mspeed;
 	motor(motorright) = mspeed;
@@ -46,7 +47,10 @@ task main()
 		newrotater = SensorValue[dgtl3];
 		rotatedistl = newrotatel - oldrotatel;
 		rotatedistr = newrotater - oldrotater;
-
+		distl = rotatedistl / 360 * 26.5;
+		distr = rotatedistr / 360 * 26.5;
+		avgdist = distl + distr;
+		avgdist = avgdist / 2;
 
 	}
 

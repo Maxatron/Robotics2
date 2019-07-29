@@ -14,43 +14,76 @@ task main()
 
 	int cycles = 100;
 	int n = 0;  //variable to kill the program after x number of cycles
-	int mspeed = 127; //motor speed
 
-	float distancex = 0;
-	float distancey = 0;//distance travelled in the cycle
+	int dftspeed = 100; //Default speed for motors
+	int lspeed = dftspeed;
+	int rspeed = dftspeed; // Independant speeds for right and left
+
+	float goalx = 0; // in cm.     goal distance for x, afterwhich while loop is broken
+	float goaly = 0; // in cm.
+
+	float distx = 0;
+	float disty = 0;//distance travelled in the cycle
 	float totalx = 0;
 	float totaly = 0; // distance travelled total
 
 	int newangle = 0;
-	int oldangle = 0;
+	int oldangle = 0; //variables for data coming from gyro
+
 
 	int oldrotatel = 0;
 	int newrotatel = 0;
 	int oldrotater = 0;
-	int newrotater = 0;
+	int newrotater = 0; //variables for data coming in from encoders
 
 	int rotatedistl = 0;
-	int rotatedistr = 0;
+	int rotatedistr = 0; //Distance rotated this cycle
 
 	float distl = 0;
-	float distr = 0;
-	float avgdist = 0;
+	float distr = 0;//distance moved forward this cycle
+	float avgdist = 0;//average distance travelled between both wheels
 
-	motor(motorleft) = mspeed;
-	motor(motorright) = mspeed;
-	while (n < cycles){
+	float radiansangle = 0;// rotation angle from gyro in randians
+
+	motor(motorleft) = lspeed;
+	motor(motorright) = rspeed;
+	while (totalx < goalx){
+		//The following is all so that the computer can have a "mental map" of sorts as to where it is in relation to its start and end position
 		oldangle = newangle;
-		newangle = SensorValue[in8];
+		newangle = SensorValue[in8]; // Updating the current angle that the robot is pointing in, and saving the previous so calculations can be done
+
 		oldrotatel = newrotatel;
 		newrotatel = SensorValue[dgtl1];
 		oldrotater = newrotater;
-		newrotater = SensorValue[dgtl3];
+		newrotater = SensorValue[dgtl3];// updating encoder values
+
 		rotatedistl = newrotatel - oldrotatel;
-		rotatedistr = newrotater - oldrotater;
+		rotatedistr = newrotater - oldrotater; //finding the degrees through which the wheels have rotated since the last check
+
 		distl = rotatedistl / 360 * 26.5;
-		distr = rotatedistr / 360 * 26.5;
+		distr = rotatedistr / 360 * 26.5; //finding the distance through which both wheels have rotated, by multiplying by the circumference(26.5 cm)
 		avgdist = distl + distr;
-		avgdist = avgdist / 2;
+		avgdist = avgdist / 2; //calculating the average distance through which both wheels/sides of the robot travel
+
+		radiansangle = oldangle * 3.141592653589793 / 180.0; //calculating the angle in radians for trig
+		distx = cos(radiansangle)*avgdist; //distance travelled in the x direction
+		disty = sin(radiansangle)*avgdist; //distance travelled in the y direction
+		totalx = totalx + distx;// summing total distance travelled in the x
+		if (newangle < 0){
+			totaly = disty * -1 + totaly; // The *-1 is nescessary so as to keep an indication of whether the robot is "above" or "below" the straight line, as this data is lost in the trig
+		}
+		else if (newangle > 0){
+			totaly = disty + totaly
+		}
+
+		motor(motorleft) = lspeed;
+		motor(motorright) = rspeed;
+
+		wait1Msec(100);
+		//might want to do if statements for if distx < goalx and if distx > goalx
+
+		//Now to actually make the motors run...   (implement straightline code)
+
 
 	}
 

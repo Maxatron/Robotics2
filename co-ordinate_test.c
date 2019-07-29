@@ -14,6 +14,10 @@ task main()
 
 	int cycles = 100;
 	int n = 0;  //variable to kill the program after x number of cycles
+	float adjustmentrate = 1; //variable for how much the robot reacts to it being off course
+	int waittime = 50; //variable for how often the robot runs through the main loop
+
+	float precision = 2; //how close is close enough?
 
 	int dftspeed = 100; //Default speed for motors
 	int lspeed = dftspeed;
@@ -45,9 +49,9 @@ task main()
 
 	float radiansangle = 0;// rotation angle from gyro in randians
 
-	motor(motorleft) = lspeed;
-	motor(motorright) = rspeed;
-	while (totalx < goalx){
+	int end = 0; //Boolean value for whether end loop is done or not
+
+	while (end == 0){
 		//The following is all so that the computer can have a "mental map" of sorts as to where it is in relation to its start and end position
 		oldangle = newangle;
 		newangle = SensorValue[in8]; // Updating the current angle that the robot is pointing in, and saving the previous so calculations can be done
@@ -73,31 +77,89 @@ task main()
 			totaly = disty * -1 + totaly; // The *-1 is nescessary so as to keep an indication of whether the robot is "above" or "below" the straight line, as this data is lost in the trig
 		}
 		else if (newangle > 0){
-			totaly = disty + totaly
+			totaly = disty + totaly;
 		}
 
 		motor(motorleft) = lspeed;
 		motor(motorright) = rspeed;
 
-		wait1Msec(100);
+		wait1Msec(waittime);
 		//might want to do if statements for if distx < goalx and if distx > goalx
 
 		//Now to actually make the motors run...   (implement straightline code)
 
+		if (disty < 0){ //So, if the robot is below the y axis and
+			if(disty >= -2){ //if it is whithin 2 cm of the line, and
+				if(newangle<=oldangle){//if it is turning away from y axis, then
+					lspeed = lspeed - adjustmentrate;
+					rspeed = rspeed + adjustmentrate;//adjust the speed of motors so as to turn the robot
+				}
+			}
+			else if (disty < -2){//But if the robot is further than 2 cm away, and
+				if(newangle<=oldangle){//if robot is turning away from y-axis, then
+					lspeed = lspeed - 2*adjustmentrate;
+					rspeed = rspeed = 2*adjustmentrate;//change speed at a greater rate
+				}
+			}
+		}
+
+		if (disty > 0) {
+			if (disty <= 2){
+				if(newangle>=oldangle){
+					lspeed = lspeed + adjustmentrate;
+					rspeed = rspeed - adjustmentrate;
+				}
+			}
+			else if (disty > 2){
+				if(newangle>=oldangle){
+					lspeed = lspeed + 2*adjustmentrate;
+					rspeed = rspeed + 2*adjustmentrate;    //This section does the same as above.
+				}
+			}
+		}
+
 
 	}
-
-	mspeed = 0;
-	motor(motorleft) = mspeed;
-	motor(motorright) = mspeed;
-
-	while (mspeed >= - 20){
-		mspeed = mspeed - 10;
-		motor(motorleft) = mspeed;
-		motor(motorright) = mspeed;
+	if (totalx >= goalx - 5){ //If the robot is approaching the target distance, it should
+		dftspeed = 70; //reduce its speed down to 70, so that it can better judge its distance
+		lspeed = 70;
+		rspeed = 70; // This does get rid of any adjustments the robot was making, but thats just how it is
+	}
+	if(totalx >= goalx){
+		motor(motorleft) = -10;
+		motor(motorright) = -10;
 		wait1Msec(50);
+		motor(motorleft) = -15;
+		motor(motorright) = -15;
+		wait1Msec(50);
+		motor(motorleft) = 0;
+		motor(motorright) = 0; //Stopping the robot as quickly as possible
+
+		while(end==0){
+			if(totalx > goalx){
+				motor(motorleft) = -25;
+				motor(motorright) = -25;
+				wait1Msec(waittime);
+				if(goalx - precision < totalx < goalx){
+					motor(motorright) = 5;
+					motor(motorleft) = 5;
+					wait1Msec(waittime);
+					motor(motorleft)= 0;
+					motor(motorright) = 0;
+					if(goalx - precision < totalx < goalx){
+						motor(motorleft) = 0;
+						motor(motorright) = 0;
+						end += 1;
+					}
+				}
+			}
+		}
+
+
+
 	}
-	motor(motorleft) = mspeed;
-	motor(motorright) = mspeed;
+
+
+
 
 }
